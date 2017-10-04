@@ -17,7 +17,7 @@ class MergePlugin implements PluginInterface, EventSubscriberInterface
     /**
      * Priority that plugin uses to register callbacks.
      */
-    const CALLBACK_PRIORITY = 1;
+    const CALLBACK_PRIORITY = 500001;
 
     /**
      *
