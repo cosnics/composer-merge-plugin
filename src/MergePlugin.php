@@ -35,7 +35,7 @@ class MergePlugin implements PluginInterface, EventSubscriberInterface
 
         $package = $composer->getPackage();
         $extra = $package->getExtra();
-        $extra['merge-plugin']['include'] = array($this->packageNamespaces);
+        $extra['merge-plugin']['include'] = $this->packageNamespaces;
         $extra['merge-plugin']['recurse'] = true;
         $extra['merge-plugin']['replace'] = false;
         $extra['merge-plugin']['ignore-duplicates'] = false;
