@@ -27,6 +27,12 @@ class MergePlugin implements PluginInterface, EventSubscriberInterface
 
     /**
      *
+     * @var string[]
+     */
+    private $packageNamespaces = array();
+
+    /**
+     *
      * {@inheritdoc}
      *
      */
@@ -56,6 +62,10 @@ class MergePlugin implements PluginInterface, EventSubscriberInterface
      */
     public function onInit(BaseEvent $event)
     {
+        $this->discoverPackages('');
+        var_dump($this->packageNamespaces);
+        exit();
+
         $package = $this->composer->getPackage();
         $extra = $package->getExtra();
         $extra['merge-plugin']['include'] = array('src/Chamilo/Libraries/composer.json');
@@ -67,5 +77,106 @@ class MergePlugin implements PluginInterface, EventSubscriberInterface
         $extra['merge-plugin']['merge-extra-deep'] = false;
         $extra['merge-plugin']['merge-scripts'] = false;
         $package->setExtra($extra);
+    }
+
+    /**
+     *
+     * @param string $namespace
+     */
+    protected function discoverPackages($rootNamespace)
+    {
+        $blacklist = $this->getBlacklistedFolders();
+        $folders = $this->getDirectoryContent($this->namespaceToFullPath($rootNamespace));
+
+        foreach ($folders as $folder)
+        {
+            if (! in_array($folder, $blacklist) && substr($folder, 0, 1) != '.')
+            {
+                $folderNamespace = ($rootNamespace ? $rootNamespace . '\\' : '') . $folder;
+
+                if ($this->verifyPackage($folderNamespace))
+                {
+                    $this->addPackageNamespace($folderNamespace);
+                }
+
+                $this->discoverPackages($folderNamespace);
+            }
+        }
+    }
+
+    protected function namespaceToFullPath($namespace = null)
+    {
+        return $this->getBasePath() . ($namespace ? $this->namespaceToPath($namespace) . DIRECTORY_SEPARATOR : '');
+    }
+
+    /**
+     *
+     * @param string $namespace
+     * @param boolean $web
+     * @return string
+     */
+    protected function namespaceToPath($namespace)
+    {
+        return strtr($namespace, '\\', DIRECTORY_SEPARATOR);
+    }
+
+    protected function getBasePath()
+    {
+        return realpath(__DIR__ . '/../../../../src/') . DIRECTORY_SEPARATOR;
+    }
+
+    /**
+     *
+     * @param string $packageNamespace
+     */
+    protected function addPackageNamespace($packageNamespace)
+    {
+        $this->packageNamespaces[] = $packageNamespace;
+    }
+
+    protected function getDirectoryContent($path)
+    {
+        $result = array();
+
+        if (! file_exists($path))
+        {
+            return $result;
+        }
+
+        $it = new \DirectoryIterator($path);
+
+        foreach ($it as $entry)
+        {
+            if ($it->isDot())
+            {
+                continue;
+            }
+
+            if ($entry->isDir())
+            {
+                $result[] = $entry->__toString();
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     *
+     * @return string[]
+     */
+    protected function getBlacklistedFolders()
+    {
+        return array('.git', '.hg', 'build', 'Build', 'plugin', 'resources', 'Resources', 'Test');
+    }
+
+    /**
+     *
+     * @param string $folderNamespace
+     * @return boolean
+     */
+    protected function verifyPackage($folderNamespace)
+    {
+        return file_exists($this->namespaceToFullPath($folderNamespace) . DIRECTORY_SEPARATOR . 'composer.json');
     }
 }
