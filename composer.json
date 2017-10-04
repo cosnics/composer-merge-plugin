@@ -1,0 +1,32 @@
+{
+	"name": "cosnics/composer-merge-plugin",
+	"description": "Composer plugin to merge multiple composer.json files",
+	"type": "composer-plugin",
+	"license": "GPL-3.0",
+	"authors": [
+		{
+			"name": "Hans De Bisschop",
+			"email": "hans.de.bisschop@ehb.be"
+		}
+	],
+	"minimum-stability": "dev",
+	"prefer-stable": true,
+	"require": {
+		"composer-plugin-api": "^1.0",
+		"php": ">=7.0.0"
+	},
+	"require-dev": {
+		"composer/composer": "~1.0.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"Cosnics\\Composer\\": "src/"
+		}
+	},
+	"extra": {
+		"class": "Cosnics\\Composer\\MergePlugin"
+	},
+	"config": {
+		"optimize-autoloader": true
+	}
+}
