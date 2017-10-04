@@ -20,12 +20,6 @@ class MergePlugin implements PluginInterface, EventSubscriberInterface
 
     /**
      *
-     * @var Composer $composer
-     */
-    protected $composer;
-
-    /**
-     *
      * @var string[]
      */
     private $packageNamespaces = array();
@@ -37,15 +31,11 @@ class MergePlugin implements PluginInterface, EventSubscriberInterface
      */
     public function activate(Composer $composer, IOInterface $io)
     {
-        $this->composer = $composer;
-
         $this->discoverPackages('');
-        var_dump($this->packageNamespaces);
-        exit();
 
-        $package = $this->composer->getPackage();
+        $package = $composer->getPackage();
         $extra = $package->getExtra();
-        $extra['merge-plugin']['include'] = array('src/Chamilo/Libraries/composer.json');
+        $extra['merge-plugin']['include'] = array($this->packageNamespaces);
         $extra['merge-plugin']['recurse'] = true;
         $extra['merge-plugin']['replace'] = false;
         $extra['merge-plugin']['ignore-duplicates'] = false;
